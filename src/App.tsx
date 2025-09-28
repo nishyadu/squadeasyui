@@ -82,7 +82,7 @@ const AboutContent = () => (
 )
 
 export default function App() {
-  const { dataset, updateTeams, updateConstants, resetConstants, updateAsOf, saveSnapshot, history, setDataset } = useDataset()
+  const { dataset, updateTeams, updateConstants, resetConstants, updateAsOf, saveSnapshot, history, kinetics, loading, error, setDataset } = useDataset()
 
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
@@ -150,11 +150,20 @@ export default function App() {
         lastUpdated={dataset.asOf}
       >
         <div className="flex flex-col gap-8">
-          <SummaryTiles dataset={dataset} teams={teamsWithKPIs} />
-          <TeamsComparisonGrid teams={teamsWithKPIs} constants={dataset.constants} dataset={dataset} onDrillDown={handleDrilldown} />
-          <TeamCharts teams={teamsWithKPIs} />
-          <ProjectionView dataset={dataset} teams={teamsWithKPIs} constants={dataset.constants} history={history} />
-          <AccelerationPage />
+          {error ? (
+            <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div>
+          ) : null}
+          {loading ? (
+            <div className="rounded-xl border border-white/10 bg-slate-900/60 p-6 text-center text-slate-400">Loading latest dataset…</div>
+          ) : (
+            <>
+              <SummaryTiles dataset={dataset} teams={teamsWithKPIs} />
+              <TeamsComparisonGrid teams={teamsWithKPIs} constants={dataset.constants} dataset={dataset} onDrillDown={handleDrilldown} />
+              <TeamCharts teams={teamsWithKPIs} />
+              <ProjectionView dataset={dataset} teams={teamsWithKPIs} constants={dataset.constants} history={history} />
+              <AccelerationPage kinetics={kinetics} />
+            </>
+          )}
         </div>
 
         <Modal open={isTeamModalOpen} onClose={() => setTeamModalOpen(false)} title="Edit teams" description="Paste or import data, then save changes." size="xl">
@@ -180,8 +189,8 @@ export default function App() {
             </div>
             <TeamForm teams={dataset.teams} onChange={updateTeams} />
             <div className="flex flex-wrap justify-end gap-2">
-              <button className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200" onClick={() => updateAsOf(dayjs().toISOString())}>
-                Save to localStorage
+              <button className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200" onClick={saveSnapshot}>
+                Save snapshot
               </button>
               <button className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300" onClick={() => setTeamModalOpen(false)}>
                 Close

@@ -12,12 +12,6 @@ export const DEFAULT_CONSTANTS: DatasetConstants = {
   },
 }
 
-export const STORAGE_KEYS = {
-  dataset: 'squad-analytics:data',
-  history: 'squad-analytics:history',
-  kinetics: 'squad-analytics:accel',
-} as const
-
 export const HISTORY_LIMIT = 14
 
 export const DEMO_DATA: Dataset = {

@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import dayjs from 'dayjs'
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
+
 import type { HistoryEntry } from '../../types.ts'
 
 type TrendLineProps = {
@@ -7,38 +8,71 @@ type TrendLineProps = {
   teamName: string
 }
 
-export const TrendLine = ({ history, teamName }: TrendLineProps) => {
-  const data = history
-    .map((entry) => {
-      const team = entry.teams.find((teamItem) => teamItem.name === teamName)
-      if (!team) return null
-      return {
-        date: dayjs(entry.asOf).format('MMM D'),
-        ptsPer10k: team.teamPoints ? team.teamPoints / (team.steps / 10000) : 0,
-        loggingRate: (team.activityKm / (team.steps / entry.constants.stepsPerKmFoot)) * 100,
-      }
-    })
-    .filter((point): point is { date: string; ptsPer10k: number; loggingRate: number } => Boolean(point))
+const formatDateLabel = (timestamp: string) => dayjs(timestamp).format('MMM D')
 
-  if (data.length < 2) {
-    return <p className="text-sm text-slate-400">Not enough history yet. Save snapshots to build trendlines.</p>
+const buildSparklinePath = (entries: HistoryEntry[], teamName: string) => {
+  const points = entries
+    .map((entry) => entry.teams.find((team) => team.name === teamName)?.teamPoints)
+    .filter((value): value is number => typeof value === 'number')
+
+  if (points.length === 0) return ''
+
+  const maxValue = Math.max(...points)
+  const minValue = Math.min(...points)
+  const range = Math.max(maxValue - minValue, 1)
+
+  return points
+    .map((value, index) => {
+      const x = (index / Math.max(points.length - 1, 1)) * 100
+      const y = 100 - ((value - minValue) / range) * 100
+      return `${index === 0 ? 'M' : 'L'}${x},${y}`
+    })
+    .join(' ')
+}
+
+export const TrendLine = ({ history, teamName }: TrendLineProps) => {
+  const data = useMemo(
+    () => history.filter((entry) => entry.teams.some((team) => team.name === teamName)),
+    [history, teamName],
+  )
+
+  if (data.length === 0) {
+    return (
+      <div className="rounded-lg border border-white/10 bg-slate-900/40 p-4">
+        <div className="h-20 w-full animate-pulse rounded bg-slate-800/60" />
+      </div>
+    )
+  }
+
+  const path = buildSparklinePath(data, teamName)
+
+  if (path.length === 0) {
+    return <p className="text-sm text-rose-300">No team points recorded for {teamName}.</p>
   }
 
   return (
-    <div className="h-64">
-      <ResponsiveContainer>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-          <XAxis dataKey="date" stroke="#94a3b8" />
-          <YAxis yAxisId="left" stroke="#22c55e" />
-          <YAxis yAxisId="right" orientation="right" stroke="#38bdf8" />
-          <Tooltip wrapperStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, color: '#e2e8f0', padding: '0.75rem' }} />
-          <Legend />
-          <Line yAxisId="left" type="monotone" dataKey="ptsPer10k" stroke="#22c55e" strokeWidth={2} name="Pts/10k" />
-          <Line yAxisId="right" type="monotone" dataKey="loggingRate" stroke="#38bdf8" strokeWidth={2} name="Logging %" />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <figure className="space-y-3">
+      <svg viewBox="0 0 100 100" className="h-24 w-full rounded-lg border border-white/10 bg-slate-950/50">
+        <path d={path} fill="none" stroke="url(#sparklineGradient)" strokeWidth={2} strokeLinecap="round" />
+        <defs>
+          <linearGradient id="sparklineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#0ea5e9" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <figcaption className="grid gap-1 text-xs text-slate-300">
+        {data.map((entry) => {
+          const team = entry.teams.find((candidate) => candidate.name === teamName)
+          return (
+            <div key={entry.savedAt} className="flex items-center justify-between rounded border border-white/10 bg-slate-900/30 px-3 py-1.5">
+              <span>{formatDateLabel(entry.asOf)}</span>
+              <span className="font-semibold text-white">{team?.teamPoints?.toLocaleString() ?? '—'}</span>
+            </div>
+          )
+        })}
+      </figcaption>
+    </figure>
   )
 }
 
