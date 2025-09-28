@@ -3,26 +3,14 @@ import dayjs from 'dayjs'
 import type { Dataset, DatasetConstants, HistoryEntry, TeamDailyKinetics } from '../types.ts'
 import { DEFAULT_CONSTANTS } from './constants.ts'
 import { buildDailyKinetics } from './kinetics.ts'
-import { isSupabaseConfigured } from '../services/supabaseClient.ts'
 import { fetchHistory, fetchKinetics, fetchLatestDataset, insertHistoryEntry, pruneHistory, replaceKinetics, upsertDataset } from '../services/supabaseStorage.ts'
-import {
-  fallbackAppendHistory,
-  fallbackLoadDataset,
-  fallbackLoadHistory,
-  fallbackLoadKinetics,
-  fallbackSaveDataset,
-  fallbackSaveHistory,
-  fallbackSaveKinetics,
-} from './supabaseStorageFallback.ts'
-
-const createEmptyDataset = (): Dataset => ({
-  asOf: dayjs().toISOString(),
-  constants: { ...DEFAULT_CONSTANTS },
-  teams: [],
-})
 
 const normalizeDataset = (input?: Dataset): Dataset => {
-  const base = createEmptyDataset()
+  const base: Dataset = {
+    asOf: dayjs().toISOString(),
+    constants: { ...DEFAULT_CONSTANTS },
+    teams: [],
+  }
   if (!input) return base
 
   const stepMissionPts = {
@@ -46,36 +34,21 @@ const normalizeDataset = (input?: Dataset): Dataset => {
 }
 
 export const loadDataset = async (): Promise<Dataset> => {
-  if (!isSupabaseConfigured) {
-    return normalizeDataset(fallbackLoadDataset())
-  }
-
   const dataset = await fetchLatestDataset()
   if (dataset) return normalizeDataset(dataset)
 
-  return createEmptyDataset()
+  throw new Error('Supabase dataset not seeded yet')
 }
 
 export const saveDataset = async (dataset: Dataset): Promise<void> => {
-  if (!isSupabaseConfigured) {
-    fallbackSaveDataset(dataset)
-    return
-  }
   await upsertDataset(dataset)
 }
 
 export const loadHistory = async (): Promise<HistoryEntry[]> => {
-  if (!isSupabaseConfigured) {
-    return fallbackLoadHistory()
-  }
   return await fetchHistory()
 }
 
 export const appendHistory = async (dataset: Dataset, limit: number): Promise<HistoryEntry[]> => {
-  if (!isSupabaseConfigured) {
-    return fallbackAppendHistory(dataset)
-  }
-
   const history = await fetchHistory(limit)
   const entry: HistoryEntry = {
     ...dataset,
@@ -90,23 +63,15 @@ export const appendHistory = async (dataset: Dataset, limit: number): Promise<Hi
 }
 
 export const saveHistory = async (history: HistoryEntry[]): Promise<void> => {
-  if (!isSupabaseConfigured) {
-    fallbackSaveHistory(history)
-  }
+  // This function is no longer used as fallback logic is removed.
+  // If Supabase is not configured, this function will not be called.
 }
 
 export const loadKinetics = async (): Promise<TeamDailyKinetics[]> => {
-  if (!isSupabaseConfigured) {
-    return fallbackLoadKinetics()
-  }
   return await fetchKinetics()
 }
 
 export const saveKinetics = async (kinetics: TeamDailyKinetics[]): Promise<void> => {
-  if (!isSupabaseConfigured) {
-    fallbackSaveKinetics(kinetics)
-    return
-  }
   await replaceKinetics(kinetics)
 }
 
