@@ -21,52 +21,62 @@ type KineticsChartProps = {
 const formatDate = (value: string) => dayjs(value).format('MMM D')
 
 type TooltipPayload = {
-  name: string
+  name?: string
   color?: string
-  payload?: TeamDailyKinetics['series'][number] & { points: number }
+  dataKey?: string
+  payload?: TeamDailyKinetics['series'][number]
+  value?: number
 }
 
-const tooltipContent = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayload[]; label?: string }) => {
-  if (!active || !payload || payload.length === 0 || !label) return null
+type TooltipProps = {
+  active?: boolean
+  payload?: TooltipPayload[]
+  label?: string | number
+}
+
+const tooltipContent = ({ active, payload, label }: TooltipProps) => {
+  if (!active || !payload || payload.length === 0 || typeof label !== 'string') return null
   return (
     <div className="min-w-[220px] space-y-2 rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-xs text-slate-200">
       <div className="font-semibold text-white">{dayjs(label).format('ddd, MMM D')}</div>
-      {payload.map((entry, index) => (
-        <div key={index} className="space-y-1 border-b border-white/5 pb-1 last:border-none last:pb-0">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="font-semibold text-white">{entry.name}</span>
-          </div>
-          {entry.payload ? (
+      {payload.map((entry, index) => {
+        if (!entry.payload) return null
+        const point = entry.payload
+        return (
+          <div key={entry.dataKey ?? index} className="space-y-1 border-b border-white/5 pb-1 last:border-none last:pb-0">
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span className="font-semibold text-white">{entry.name}</span>
+            </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-300">
               <span className="text-slate-400">Points</span>
-              <span className="text-right text-white">{entry.payload.points.toLocaleString()}</span>
+              <span className="text-right text-white">{point.points.toLocaleString()}</span>
               <span className="text-slate-400">Velocity</span>
-              <span className="text-right text-white">{entry.payload.velocity.toFixed(1)}</span>
-              {entry.payload.velocityEMA !== undefined ? (
+              <span className="text-right text-white">{point.velocity.toFixed(1)}</span>
+              {point.velocityEMA !== undefined ? (
                 <>
                   <span className="text-slate-400">Velocity EMA</span>
-                  <span className="text-right text-white">{entry.payload.velocityEMA.toFixed(1)}</span>
+                  <span className="text-right text-white">{point.velocityEMA.toFixed(1)}</span>
                 </>
               ) : null}
               <span className="text-slate-400">Acceleration</span>
-              <span className="text-right text-white">{entry.payload.acceleration.toFixed(1)}</span>
-              {entry.payload.accelEMA !== undefined ? (
+              <span className="text-right text-white">{point.acceleration.toFixed(1)}</span>
+              {point.accelEMA !== undefined ? (
                 <>
                   <span className="text-slate-400">Accel EMA</span>
-                  <span className="text-right text-white">{entry.payload.accelEMA.toFixed(1)}</span>
+                  <span className="text-right text-white">{point.accelEMA.toFixed(1)}</span>
                 </>
               ) : null}
-              {entry.payload.estimated ? (
+              {point.estimated ? (
                 <span className="col-span-2 inline-flex items-center justify-end gap-1 text-amber-300">
                   <span className="text-[10px]">≈</span>
                   <span>estimated</span>
                 </span>
               ) : null}
             </div>
-          ) : null}
-        </div>
-      ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -74,16 +84,24 @@ const tooltipContent = ({ active, payload, label }: { active?: boolean; payload?
 export const KineticsChart = ({ teams, useEMA }: KineticsChartProps) => {
   const combined = teams
     .flatMap((team) => team.series.map((point) => ({ ...point, name: team.name })))
-    .reduce<Record<string, Record<string, number | string | boolean | TeamDailyKinetics['series'][number]>>>((acc, point) => {
-      const key = point.date
-      if (!acc[key]) acc[key] = { date: key }
-      acc[key][`${point.name}-velocity`] = point.velocity
-      acc[key][`${point.name}-acceleration`] = useEMA ? point.accelEMA ?? point.acceleration : point.acceleration
-      acc[key][`${point.name}-raw`] = point
-      return acc
-    }, {})
+    .reduce<Record<string, Record<string, number | string | boolean | TeamDailyKinetics['series'][number]>>>(
+      (acc, point) => {
+        const key = point.date
+        if (!acc[key]) acc[key] = { date: key }
+        acc[key][`${point.name}-velocity`] = point.velocity
+        acc[key][`${point.name}-acceleration`] = useEMA ? point.accelEMA ?? point.acceleration : point.acceleration
+        acc[key][`${point.name}-raw`] = point
+        return acc
+      },
+      {},
+    )
 
-  const data = Object.values(combined).sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
+  const data = Object.values(combined).map((entry) => ({
+    date: entry.date as string,
+    ...entry,
+  })) as Array<{ date: string } & Record<string, number | string | boolean | TeamDailyKinetics['series'][number]>>
+
+  data.sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
 
   return (
     <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5">

@@ -2,8 +2,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 
 import type { Dataset, DatasetConstants, TeamInput, TeamWithKPIs, HistoryEntry } from '../../types.ts'
 import { computeKPIs } from '../../utils/kpis.ts'
-import { getTeamColor } from '../../utils/colors.ts'
-import type { SeriesPoint, TeamProjection, PaceBracket } from './types.ts'
+import type { SeriesPoint, PaceBracket } from './types.ts'
 
 type PaceComputation = {
   pacePerDay: number
@@ -17,14 +16,13 @@ export const ensureChronologicalHistory = (dataset: Dataset, history: HistoryEnt
   const merged = new Map<string, HistoryEntry>()
   history.forEach((entry) => merged.set(entry.asOf, entry))
   merged.set(dataset.asOf, {
-    asOf: dataset.asOf,
-    teams: dataset.teams,
-    constants: dataset.constants,
+    ...dataset,
+    savedAt: dataset.asOf,
   })
   return Array.from(merged.values()).sort((a, b) => dayjs(a.asOf).valueOf() - dayjs(b.asOf).valueOf())
 }
 
-export const getTeamSeries = (history: HistoryPoint[], team: TeamWithKPIs, constants: DatasetConstants): SeriesPoint[] => {
+export const getTeamSeries = (history: HistoryEntry[], team: TeamWithKPIs, constants: DatasetConstants): SeriesPoint[] => {
   const pointsByDate = new Map<string, SeriesPoint>()
 
   history.forEach((entry) => {
@@ -141,12 +139,6 @@ export const buildProjectionSeries = (current: number, pacePerDay: number, asOf:
     date: asOf.add(index, 'day'),
     points: projectTeam(current, pacePerDay, index),
     estimated: false,
-  }))
-
-export const withProjectionMeta = (teams: TeamWithKPIs[], colors: Map<string, string>, projections: TeamProjection[]): TeamProjection[] =>
-  projections.map((projection, index) => ({
-    ...projection,
-    color: colors.get(projection.name) ?? getTeamColor(projection.name, index),
   }))
 
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 
 import type { TeamDailyKinetics } from '../../types.ts'
 import { loadKineticsCache } from '../../utils/storage.ts'
@@ -9,6 +10,10 @@ import { AccelerationSummaryTable } from './AccelerationSummaryTable.tsx'
 import { ControlsPanel } from './ControlsPanel.tsx'
 import { exportKineticsCSV } from '../../utils/export.ts'
 
+const LOOKBACK_OPTIONS = [7, 14, 30] as const
+
+dayjs.extend(isSameOrAfter)
+
 const filterSeries = (series: TeamDailyKinetics['series'], days: number) => {
   if (series.length === 0) return []
   const end = dayjs(series[series.length - 1].date)
@@ -17,7 +22,7 @@ const filterSeries = (series: TeamDailyKinetics['series'], days: number) => {
 }
 
 export const AccelerationPage = () => {
-  const [lookback, setLookback] = useState<typeof LOOKBACK_OPTIONS[number]>(14)
+  const [lookback, setLookback] = useState<(typeof LOOKBACK_OPTIONS)[number]>(14)
   const [useEMA, setUseEMA] = useState(true)
   const [alphaVelocity, setAlphaVelocity] = useState(0.4)
   const [alphaAcceleration, setAlphaAcceleration] = useState(0.4)

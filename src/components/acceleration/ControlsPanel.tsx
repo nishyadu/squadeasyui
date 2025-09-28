@@ -1,6 +1,6 @@
 type ControlsPanelProps = {
   lookback: number
-  onLookbackChange: (value: number) => void
+  onLookbackChange: (value: (typeof LOOKBACK_OPTIONS)[number]) => void
   useEMA: boolean
   onToggleEMA: (value: boolean) => void
   alphaVelocity: number
@@ -34,7 +34,7 @@ export const ControlsPanel = ({
       <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1">
           <span className="text-xs uppercase tracking-wide text-slate-400">Lookback</span>
-          <select value={lookback} onChange={(event) => onLookbackChange(Number(event.target.value))} className="rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
+          <select value={lookback} onChange={(event) => onLookbackChange(Number(event.target.value) as (typeof LOOKBACK_OPTIONS)[number])} className="rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white">
             {LOOKBACK_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option} days

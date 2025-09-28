@@ -154,7 +154,7 @@ export default function App() {
           <TeamsComparisonGrid teams={teamsWithKPIs} constants={dataset.constants} dataset={dataset} onDrillDown={handleDrilldown} />
           <TeamCharts teams={teamsWithKPIs} />
           <ProjectionView dataset={dataset} teams={teamsWithKPIs} constants={dataset.constants} history={history} />
-          <AccelerationPage constants={dataset.constants} />
+          <AccelerationPage />
         </div>
 
         <Modal open={isTeamModalOpen} onClose={() => setTeamModalOpen(false)} title="Edit teams" description="Paste or import data, then save changes." size="xl">

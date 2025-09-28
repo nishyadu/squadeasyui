@@ -21,8 +21,8 @@ const formatDateLabel = (value: string) => dayjs(value).format('MMM D')
 
 const tooltipLabelFormatter = (label: string) => dayjs(label).format('ddd, MMM D')
 
-const tooltipContent = ({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey?: string; value?: number; name?: string; color?: string }>; label?: string }) => {
-  if (!active || !payload || payload.length === 0 || !label) return null
+const tooltipContent = ({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey?: string; value?: number; name?: string; color?: string }>; label?: string | number }) => {
+  if (!active || !payload || payload.length === 0 || typeof label !== 'string') return null
   return (
     <div className="min-w-[200px] space-y-2 rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-xs text-slate-200">
       <div className="font-semibold text-white">{tooltipLabelFormatter(label)}</div>
