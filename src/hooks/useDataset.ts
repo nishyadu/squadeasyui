@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import type { Dataset, TeamInput } from '../types.ts'
 import { HISTORY_LIMIT } from '../utils/constants.ts'
-import { loadDataset, loadHistory, loadKinetics, saveDataset, saveKinetics, saveSnapshot as persistSnapshot, updateConstants as persistConstants } from '../utils/database.ts'
+import { isSupabaseConfigured } from '../services/supabaseClient.ts'
+import { loadDataset, loadHistory, loadKinetics, saveDataset, saveSnapshot as persistSnapshot, updateConstants as persistConstants } from '../utils/database.ts'
 
 type UseDatasetState = {
   dataset: Dataset
@@ -10,6 +11,7 @@ type UseDatasetState = {
   kinetics: Awaited<ReturnType<typeof loadKinetics>>
   loading: boolean
   error: string | null
+  status: { type: 'success' | 'info' | 'error'; message: string } | null
 }
 
 const defaultState: UseDatasetState = {
@@ -32,6 +34,7 @@ const defaultState: UseDatasetState = {
   kinetics: [],
   loading: true,
   error: null,
+  status: null,
 }
 
 export const useDataset = () => {
@@ -43,12 +46,12 @@ export const useDataset = () => {
       try {
         const [dataset, history, kinetics] = await Promise.all([loadDataset(), loadHistory(), loadKinetics()])
         if (!cancelled) {
-          setState({ dataset, history, kinetics, loading: false, error: null })
+          setState({ dataset, history, kinetics, loading: false, error: null, status: null })
         }
       } catch (error) {
         console.error('Failed to load dataset', error)
         if (!cancelled) {
-          setState((previous) => ({ ...previous, loading: false, error: error instanceof Error ? error.message : 'Unknown error' }))
+          setState((previous) => ({ ...previous, loading: false, error: error instanceof Error ? error.message : 'Unknown error', status: null }))
         }
       }
     }
@@ -64,7 +67,7 @@ export const useDataset = () => {
       void saveDataset(nextDataset).catch((error) => {
         console.error('Failed to persist dataset', error)
       })
-      return { ...previous, dataset: nextDataset }
+      return { ...previous, dataset: nextDataset, status: null }
     })
   }, [])
 
@@ -73,6 +76,7 @@ export const useDataset = () => {
       ...current,
       teams,
     }))
+    setState((previous) => ({ ...previous, status: null }))
   }, [setDataset])
 
   const updateConstants = useCallback((constants: Dataset['constants']) => {
@@ -80,6 +84,7 @@ export const useDataset = () => {
       ...current,
       constants,
     }))
+    setState((previous) => ({ ...previous, status: null }))
     void persistConstants({ ...state.dataset, constants }, {}).catch((error) => {
       console.error('Failed to update constants', error)
     })
@@ -97,17 +102,34 @@ export const useDataset = () => {
       ...current,
       asOf: timestamp,
     }))
+    setState((previous) => ({ ...previous, status: null }))
   }, [setDataset])
 
   const saveSnapshot = useCallback(async () => {
     try {
-      setState((previous) => ({ ...previous, loading: true, error: null }))
+      setState((previous) => ({ ...previous, loading: true, error: null, status: null }))
       const { history, kinetics } = await persistSnapshot(state.dataset, HISTORY_LIMIT)
-      setState((previous) => ({ ...previous, history, kinetics, loading: false }))
-      await saveKinetics(kinetics)
+      setState((previous) => ({
+        ...previous,
+        history,
+        kinetics,
+        loading: false,
+        status: {
+          type: isSupabaseConfigured ? 'success' : 'info',
+          message: isSupabaseConfigured ? 'Saved to Supabase.' : 'Saved locally (Supabase env not configured).',
+        },
+      }))
     } catch (error) {
       console.error('Failed to save snapshot', error)
-      setState((previous) => ({ ...previous, loading: false, error: error instanceof Error ? error.message : 'Failed to save snapshot' }))
+      setState((previous) => ({
+        ...previous,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to save snapshot',
+        status: {
+          type: 'error',
+          message: error instanceof Error ? error.message : 'Failed to save snapshot',
+        },
+      }))
     }
   }, [state.dataset])
 
@@ -120,6 +142,7 @@ export const useDataset = () => {
   kinetics: state.kinetics,
     loading: state.loading,
     error: state.error,
+    status: state.status,
     updateTeams,
     updateConstants,
     resetConstants,

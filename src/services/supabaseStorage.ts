@@ -3,7 +3,6 @@ import { supabaseClient } from './supabaseClient.ts'
 
 type SupabaseHistoryRow = {
   id: number
-  snapshot: HistoryEntry
 }
 
 const DATASET_ID = 1

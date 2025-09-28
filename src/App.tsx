@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import classNames from 'classnames'
 import dayjs from 'dayjs'
 
 import { AppShell } from './components/layout/AppShell.tsx'
@@ -82,7 +83,7 @@ const AboutContent = () => (
 )
 
 export default function App() {
-  const { dataset, updateTeams, updateConstants, resetConstants, updateAsOf, saveSnapshot, history, kinetics, loading, error, setDataset } = useDataset()
+  const { dataset, updateTeams, updateConstants, resetConstants, updateAsOf, saveSnapshot, history, kinetics, loading, error, status, setDataset } = useDataset()
 
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
@@ -150,6 +151,18 @@ export default function App() {
         lastUpdated={dataset.asOf}
       >
         <div className="flex flex-col gap-8">
+          {status ? (
+            <div
+              className={classNames(
+                'rounded-xl border px-4 py-3 text-sm',
+                status.type === 'success' && 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200',
+                status.type === 'info' && 'border-sky-400/40 bg-sky-400/10 text-sky-200',
+                status.type === 'error' && 'border-rose-500/40 bg-rose-500/10 text-rose-200',
+              )}
+            >
+              {status.message}
+            </div>
+          ) : null}
           {error ? (
             <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">{error}</div>
           ) : null}
