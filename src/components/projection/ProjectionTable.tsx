@@ -75,7 +75,7 @@ export const ProjectionTable = ({ teams, daysRemaining, showEstimates, challenge
   }
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5 text-sm text-slate-200">
+    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5 text-sm text-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-white">Projection table</h3>
@@ -88,7 +88,7 @@ export const ProjectionTable = ({ teams, daysRemaining, showEstimates, challenge
         </div>
       </header>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-left">
+        <table className="w-full min-w-[640px] text-left text-xs sm:text-sm">
           <thead className="text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="px-3 py-2">Rank</th>
@@ -116,7 +116,7 @@ export const ProjectionTable = ({ teams, daysRemaining, showEstimates, challenge
           </thead>
           <tbody>
             {sorted.map((team) => (
-              <tr key={team.name} className="border-t border-white/5 text-xs">
+              <tr key={team.name} className="border-t border-white/5">
                 <td className="px-3 py-2 text-white">#{team.rank}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">

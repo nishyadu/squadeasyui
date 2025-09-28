@@ -90,7 +90,7 @@ export const AccelerationSummaryTable = ({ teams, useEMA }: SummaryTableProps) =
   }
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5 text-sm text-slate-200">
+    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5 text-sm text-slate-200">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-white">Acceleration summary</h3>
@@ -98,7 +98,7 @@ export const AccelerationSummaryTable = ({ teams, useEMA }: SummaryTableProps) =
         </div>
       </header>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[720px] table-fixed text-left">
+        <table className="w-full min-w-[640px] table-fixed text-left text-xs sm:text-sm">
           <thead className="text-xs uppercase tracking-wide text-slate-400">
             <tr>
               <th className="px-3 py-2">Team</th>
@@ -136,7 +136,7 @@ export const AccelerationSummaryTable = ({ teams, useEMA }: SummaryTableProps) =
           </thead>
           <tbody>
             {sortedRows.map((row) => (
-              <tr key={row.name} className="border-t border-white/5 text-xs">
+              <tr key={row.name} className="border-t border-white/5">
                 <td className="px-3 py-2 font-semibold text-white">{row.name}</td>
                 <td className="px-3 py-2 text-white">{fmt1(row.avgVelocity)}</td>
                 <td className="px-3 py-2 text-white">{fmt1(row.avgAcceleration)}</td>

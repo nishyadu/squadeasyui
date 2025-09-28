@@ -104,20 +104,20 @@ export const KineticsChart = ({ teams, useEMA }: KineticsChartProps) => {
   data.sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf())
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5">
+    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5">
       <header className="flex flex-col gap-1">
         <h3 className="text-lg font-semibold text-white">Daily Gains & Acceleration</h3>
         <p className="text-xs text-slate-400">Daily gain (velocity): “Points gained since the previous day (pts/day).” Acceleration: “Change in daily gain vs the previous day (pts/day²). Positive = speeding up.”</p>
       </header>
-      <div className="mt-4 h-96">
+      <div className="mt-4 h-64 sm:h-96">
         <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 16, right: 32, left: 8, bottom: 8 }}>
+          <BarChart data={data} margin={{ top: 12, right: 24, left: 8, bottom: 8 }}>
             <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="#94a3b8" tickFormatter={formatDate} minTickGap={28} />
-            <YAxis yAxisId="velocity" stroke="#94a3b8" tickFormatter={(value) => (typeof value === 'number' ? value.toFixed(0) : '')} width={64} />
-            <YAxis yAxisId="acceleration" orientation="right" stroke="#c084fc" tickFormatter={(value) => (typeof value === 'number' ? value.toFixed(0) : '')} width={64} />
+            <XAxis dataKey="date" stroke="#94a3b8" tickFormatter={formatDate} minTickGap={18} tick={{ fontSize: 10 }} />
+            <YAxis yAxisId="velocity" stroke="#94a3b8" tickFormatter={(value) => (typeof value === 'number' ? value.toFixed(0) : '')} width={48} tick={{ fontSize: 10 }} />
+            <YAxis yAxisId="acceleration" orientation="right" stroke="#c084fc" tickFormatter={(value) => (typeof value === 'number' ? value.toFixed(0) : '')} width={52} tick={{ fontSize: 10 }} />
             <Tooltip content={tooltipContent} />
-            <Legend />
+            <Legend wrapperStyle={{ paddingTop: 8 }} iconType="circle" />
             {teams.map((team) => (
               <Fragment key={team.name}>
                 <Bar yAxisId="velocity" dataKey={`${team.name}-velocity`} name={`${team.name} velocity`} fill="var(--velocity-color, #38bdf8)" radius={4} />

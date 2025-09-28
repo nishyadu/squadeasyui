@@ -1,5 +1,5 @@
 import { Squares2X2Icon } from '@heroicons/react/24/outline'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 type AppShellProps = {
   children: ReactNode
@@ -24,6 +24,55 @@ export const AppShell = ({
   onOpenAbout,
   lastUpdated,
 }: AppShellProps) => {
+  const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
+
+  const renderLastUpdated = () =>
+    lastUpdated ? (
+      <span className="rounded-full border border-white/10 bg-slate-800/60 px-3 py-1 text-slate-300">
+        As of <time dateTime={lastUpdated}>{new Date(lastUpdated).toLocaleString()}</time>
+      </span>
+    ) : (
+      <span className="rounded-full border border-white/5 bg-slate-800/60 px-3 py-1 text-slate-400">No data yet</span>
+    )
+
+  const actions = [
+    {
+      label: 'Import CSV',
+      onClick: onImportCSV,
+      className: 'rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20',
+    },
+    {
+      label: 'Import JSON',
+      onClick: onImportJSON,
+      className: 'rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20',
+    },
+    {
+      label: 'Edit teams',
+      onClick: onEditTeams,
+      className: 'rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10',
+    },
+    {
+      label: 'Settings',
+      onClick: onOpenSettings,
+      className: 'rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10',
+    },
+    {
+      label: 'Export',
+      onClick: onExportDataset,
+      className: 'rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20',
+    },
+    {
+      label: 'New morning update',
+      onClick: onNewUpdate,
+      className: 'rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-sky-300 transition hover:bg-sky-500/20',
+    },
+    {
+      label: 'About',
+      onClick: onOpenAbout,
+      className: 'rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10',
+    },
+  ]
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-white/10 bg-slate-900/60 backdrop-blur">
@@ -39,35 +88,44 @@ export const AppShell = ({
               <p className="text-sm text-slate-400">Comparisons, insights, and coaching for every team.</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            {lastUpdated ? (
-              <span className="rounded-full border border-white/10 bg-slate-800/60 px-3 py-1 text-slate-300">
-                As of <time dateTime={lastUpdated}>{new Date(lastUpdated).toLocaleString()}</time>
-              </span>
-            ) : (
-              <span className="rounded-full border border-white/5 bg-slate-800/60 px-3 py-1 text-slate-400">No data yet</span>
-            )}
-            <button className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20" onClick={onImportCSV}>
-              Import CSV
-            </button>
-            <button className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20" onClick={onImportJSON}>
-              Import JSON
-            </button>
-            <button className="rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10" onClick={onEditTeams}>
-              Edit teams
-            </button>
-            <button className="rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10" onClick={onOpenSettings}>
-              Settings
-            </button>
-            <button className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-300 transition hover:bg-emerald-500/20" onClick={onExportDataset}>
-              Export
-            </button>
-            <button className="rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-sky-300 transition hover:bg-sky-500/20" onClick={onNewUpdate}>
-              New morning update
-            </button>
-            <button className="rounded-md border border-white/10 px-3 py-1.5 text-slate-200 transition hover:bg-white/10" onClick={onOpenAbout}>
-              About
-            </button>
+          <div className="w-full space-y-3 text-sm sm:w-auto sm:space-y-0">
+            <div className="sm:hidden">
+              <div className="flex items-center justify-between gap-2">
+                <div>{renderLastUpdated()}</div>
+                <button
+                  type="button"
+                  className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-slate-200 transition hover:bg-white/10"
+                  onClick={() => setMobileActionsOpen((prev) => !prev)}
+                >
+                  {mobileActionsOpen ? 'Close' : 'Actions'}
+                </button>
+              </div>
+              {mobileActionsOpen ? (
+                <div className="mt-3 grid gap-2">
+                  {actions.map((action) => (
+                    <button
+                      key={action.label}
+                      type="button"
+                      className={`${action.className} w-full justify-center`}
+                      onClick={() => {
+                        action.onClick()
+                        setMobileActionsOpen(false)
+                      }}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <div className="hidden flex-wrap items-center gap-2 sm:flex">
+              {renderLastUpdated()}
+              {actions.map((action) => (
+                <button key={action.label} type="button" className={action.className} onClick={action.onClick}>
+                  {action.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>

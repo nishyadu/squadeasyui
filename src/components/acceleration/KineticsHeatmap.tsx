@@ -25,13 +25,13 @@ export const KineticsHeatmap = ({ teams, onTeamSelect, onDateSelect }: HeatmapPr
   const dates = teams[0]?.series.map((point) => point.date) ?? []
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5">
+    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5">
       <header className="flex flex-col gap-1">
         <h3 className="text-lg font-semibold text-white">Acceleration Heatmap</h3>
         <p className="text-xs text-slate-400">Click a cell to focus the chart on that team and date window.</p>
       </header>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[720px] table-fixed text-xs text-slate-300">
+        <table className="w-full min-w-[640px] table-fixed text-xs text-slate-300">
           <thead>
             <tr>
               <th className="w-32 px-2 py-2 text-left">Team</th>
@@ -50,7 +50,7 @@ export const KineticsHeatmap = ({ teams, onTeamSelect, onDateSelect }: HeatmapPr
                   <td key={point.date} className="px-1 py-1">
                     <button
                       type="button"
-                      className={`flex h-6 w-full items-center justify-center rounded ${colorScale(point.acceleration)} text-[10px] text-slate-950 transition hover:brightness-125`}
+                      className={`flex h-8 w-full items-center justify-center rounded ${colorScale(point.acceleration)} text-[11px] text-slate-950 transition hover:brightness-125`}
                       onClick={() => {
                         onTeamSelect(team.name)
                         onDateSelect(point.date)

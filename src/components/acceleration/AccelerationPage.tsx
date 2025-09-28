@@ -14,6 +14,8 @@ const LOOKBACK_OPTIONS = [7, 14, 30] as const
 
 dayjs.extend(isSameOrAfter)
 
+const DEFAULT_LOOKBACK = LOOKBACK_OPTIONS[1]
+
 const filterSeries = (series: TeamDailyKinetics['series'], days: number) => {
   if (series.length === 0) return []
   const end = dayjs(series[series.length - 1].date)
@@ -22,7 +24,7 @@ const filterSeries = (series: TeamDailyKinetics['series'], days: number) => {
 }
 
 export const AccelerationPage = () => {
-  const [lookback, setLookback] = useState<(typeof LOOKBACK_OPTIONS)[number]>(14)
+  const [lookback, setLookback] = useState<(typeof LOOKBACK_OPTIONS)[number]>(DEFAULT_LOOKBACK)
   const [useEMA, setUseEMA] = useState(true)
   const [alphaVelocity, setAlphaVelocity] = useState(0.4)
   const [alphaAcceleration, setAlphaAcceleration] = useState(0.4)

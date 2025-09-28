@@ -84,7 +84,7 @@ export const ProjectionChart = ({ teams, endDate, asOf, showEstimates, daysRemai
   const todayKey = dayjs(asOf).format('YYYY-MM-DD')
 
   return (
-    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-5">
+    <section className="rounded-2xl border border-white/5 bg-slate-900/60 p-4 sm:p-5">
       <header className="flex flex-col gap-1">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-lg font-semibold text-white">Projection timeline</h3>
@@ -96,11 +96,11 @@ export const ProjectionChart = ({ teams, endDate, asOf, showEstimates, daysRemai
         </div>
         <p className="text-xs text-slate-400">Solid lines show historical cumulative points. Dashed lines project pace through {dayjs(endDate).format('MMM D')}.</p>
       </header>
-      <div className="mt-4 h-80">
+      <div className="mt-4 h-64 sm:h-80">
         <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
             <CartesianGrid stroke="#1e293b" strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="#94a3b8" tickFormatter={formatDateLabel} minTickGap={32} interval="preserveStartEnd" />
+            <XAxis dataKey="date" stroke="#94a3b8" tickFormatter={formatDateLabel} minTickGap={24} interval="preserveStartEnd" tick={{ fontSize: 10 }} />
             <YAxis stroke="#94a3b8" tickFormatter={(value) => (typeof value === 'number' ? value.toLocaleString() : '')} width={72} />
             <Tooltip labelFormatter={tooltipLabelFormatter} content={tooltipContent} />
             <Legend />
