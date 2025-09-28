@@ -15,23 +15,45 @@ import {
   fallbackSaveKinetics,
 } from './supabaseStorageFallback.ts'
 
+const createEmptyDataset = (): Dataset => ({
+  asOf: dayjs().toISOString(),
+  constants: { ...DEFAULT_CONSTANTS },
+  teams: [],
+})
+
+const normalizeDataset = (input?: Dataset): Dataset => {
+  const base = createEmptyDataset()
+  if (!input) return base
+
+  const stepMissionPts = {
+    ...base.constants.stepMissionPts,
+    ...(input.constants?.stepMissionPts ?? {}),
+  }
+
+  const constants: DatasetConstants = {
+    ...base.constants,
+    ...(input.constants ?? {}),
+    stepMissionPts,
+  }
+
+  return {
+    ...base,
+    ...input,
+    asOf: input.asOf ?? base.asOf,
+    constants,
+    teams: input.teams ?? [],
+  }
+}
+
 export const loadDataset = async (): Promise<Dataset> => {
   if (!isSupabaseConfigured) {
-    return fallbackLoadDataset() ?? {
-      asOf: dayjs().toISOString(),
-      constants: { ...DEFAULT_CONSTANTS },
-      teams: [],
-    }
+    return normalizeDataset(fallbackLoadDataset())
   }
 
   const dataset = await fetchLatestDataset()
-  if (dataset) return dataset
+  if (dataset) return normalizeDataset(dataset)
 
-  return {
-    asOf: dayjs().toISOString(),
-    constants: { ...DEFAULT_CONSTANTS },
-    teams: [],
-  }
+  return createEmptyDataset()
 }
 
 export const saveDataset = async (dataset: Dataset): Promise<void> => {
