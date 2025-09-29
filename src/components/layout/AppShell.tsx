@@ -1,5 +1,7 @@
-import { Squares2X2Icon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon, Squares2X2Icon } from '@heroicons/react/24/outline'
 import { useState, type ReactNode } from 'react'
+
+import type { SupabaseStatus } from '../../services/supabaseClient.ts'
 
 type AppShellProps = {
   children: ReactNode
@@ -11,6 +13,7 @@ type AppShellProps = {
   onNewUpdate: () => void
   onOpenAbout: () => void
   lastUpdated?: string
+  supabaseStatus: SupabaseStatus
 }
 
 export const AppShell = ({
@@ -23,6 +26,7 @@ export const AppShell = ({
   onNewUpdate,
   onOpenAbout,
   lastUpdated,
+  supabaseStatus,
 }: AppShellProps) => {
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
 
@@ -120,6 +124,7 @@ export const AppShell = ({
             </div>
             <div className="hidden flex-wrap items-center gap-2 sm:flex">
               {renderLastUpdated()}
+              <StatusBadge status={supabaseStatus} />
               {actions.map((action) => (
                 <button key={action.label} type="button" className={action.className} onClick={action.onClick}>
                   {action.label}
@@ -131,6 +136,24 @@ export const AppShell = ({
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
     </div>
+  )
+}
+
+const StatusBadge = ({ status }: { status: SupabaseStatus }) => {
+  const tone =
+    status.state === 'connected'
+      ? 'bg-emerald-500'
+      : status.state === 'error'
+        ? 'bg-rose-500'
+        : 'bg-amber-500'
+  const label = status.state === 'connected' ? 'Connected to Supabase' : status.state === 'checking' ? 'Checking Supabase…' : 'Supabase not connected'
+
+  return (
+    <span title={status.details} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-800/60 px-3 py-1 text-xs text-slate-200">
+      <span className={`h-2 w-2 rounded-full ${tone}`} aria-hidden />
+      <span>{label}</span>
+      {status.state === 'error' ? <InformationCircleIcon className="h-4 w-4 text-amber-300" aria-hidden /> : null}
+    </span>
   )
 }
 

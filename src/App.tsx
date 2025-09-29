@@ -18,6 +18,7 @@ import { DEMO_DATA } from './utils/constants.ts'
 import { exportDatasetJSON, exportTeamsCSV } from './utils/export.ts'
 import { importTeamsFromFile } from './utils/importers.ts'
 import { useDataset } from './hooks/useDataset.ts'
+import { useSupabaseStatus } from './hooks/useSupabaseStatus.ts'
 
 const aboutCopy =
   'Paste your team totals (Steps, Activity km, Missions, Quizzes, Photos, optional Team Points) and we compute objective KPIs. We estimate bike split by comparing your recorded km to step-derived foot km (assuming ~1,350 steps per km). We score logging rate (how much walking you actually record as sessions), mission density, and overall points per 10k steps. The colored badges and “Insights & Actions” tell each team exactly what to do next: log every walk as a session, add a modest bike pillar, and never miss step missions. Adjust model constants in Settings if your app’s payouts differ.'
@@ -84,6 +85,7 @@ const AboutContent = () => (
 
 export default function App() {
   const { dataset, updateTeams, updateConstants, resetConstants, updateAsOf, saveSnapshot, history, kinetics, loading, error, status, setDataset } = useDataset()
+  const supabaseStatus = useSupabaseStatus()
 
   const [isTeamModalOpen, setTeamModalOpen] = useState(false)
   const [isSettingsOpen, setSettingsOpen] = useState(false)
@@ -149,6 +151,7 @@ export default function App() {
         onNewUpdate={handleNewUpdate}
         onOpenAbout={() => setAboutOpen(true)}
         lastUpdated={dataset.asOf}
+        supabaseStatus={supabaseStatus}
       >
         <div className="flex flex-col gap-8">
           {status ? (

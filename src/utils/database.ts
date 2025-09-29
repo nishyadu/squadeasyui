@@ -62,9 +62,8 @@ export const appendHistory = async (dataset: Dataset, limit: number): Promise<Hi
   return updated
 }
 
-export const saveHistory = async (history: HistoryEntry[]): Promise<void> => {
-  // This function is no longer used as fallback logic is removed.
-  // If Supabase is not configured, this function will not be called.
+export const saveHistory = async (): Promise<void> => {
+  throw new Error('Supabase history persistence is handled automatically via saveSnapshot().')
 }
 
 export const loadKinetics = async (): Promise<TeamDailyKinetics[]> => {
